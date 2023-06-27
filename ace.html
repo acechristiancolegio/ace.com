@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="ace.css">
+  <style>
+    .task-list {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Task Manager</h1>
+    <form id="taskForm">
+      <input type="text" id="taskName" placeholder="Task Name" required>
+      <select id="taskPriority">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+      <input type="date" id="dueDate" required>
+      <button type="submit">Add Task</button>
+    </form>
+    <div id="taskList"></div>
+  </div>
+  
+  <script>
+    // Retrieve tasks from local storage or initialize empty array
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    const taskForm = document.getElementById('taskForm');
+    const taskList = document.getElementById('taskList');
+
+    // Function to render tasks on the page
+    function renderTasks() {
+      taskList.innerHTML = '';
+
+      const taskLists = {
+        high: [],
+        medium: [],
+        low: []
+      };
+
+      tasks.forEach((task, index) => {
+        const taskItem = document.createElement('div');
+        taskItem.classList.add('task');
+
+        taskItem.innerHTML = `
+          <div class="task-name">${task.name}</div>
+          <div class="task-priority">Priority: ${task.priority}</div>
+          <div class="task-date">Due Date: ${task.date}</div>
+          <div class="task-actions">
+            <button onclick="editTask(${index})">Edit</button>
+            <button onclick="deleteTask(${index})">Delete</button>
+          </div>
+        `;
+
+        taskLists[task.priority].push(taskItem);
+      });
+
+      // Render high priority tasks
+      if (taskLists.high.length > 0) {
+        const highPriorityHeader = document.createElement('h2');
+        highPriorityHeader.textContent = 'High Priority Tasks';
+        taskList.appendChild(highPriorityHeader);
+
+        const highPriorityList = document.createElement('div');
+        highPriorityList.classList.add('task-list');
+
+        taskLists.high.forEach(task => {
+          highPriorityList.appendChild(task);
+        });
+
+        taskList.appendChild(highPriorityList);
+      }
+
+      // Render medium priority tasks
+      if (taskLists.medium.length > 0) {
+        const mediumPriorityHeader = document.createElement('h2');
+        mediumPriorityHeader.textContent = 'Medium Priority Tasks';
+        taskList.appendChild(mediumPriorityHeader);
+
+        const mediumPriorityList = document.createElement('div');
+        mediumPriorityList.classList.add('task-list');
+
+        taskLists.medium.forEach(task => {
+          mediumPriorityList.appendChild(task);
+        });
+
+        taskList.appendChild(mediumPriorityList);
+      }
+
+      // Render low priority tasks
+      if (taskLists.low.length > 0) {
+        const lowPriorityHeader = document.createElement('h2');
+        lowPriorityHeader.textContent = 'Low Priority Tasks';
+        taskList.appendChild(lowPriorityHeader);
+
+        const lowPriorityList = document.createElement('div');
+        lowPriorityList.classList.add('task-list');
+
+        taskLists.low.forEach(task => {
+          lowPriorityList.appendChild(task);
+        });
+
+        taskList.appendChild(lowPriorityList);
+      }
+    }
+
+    // Function to add a new task
+    function addTask(e) {
+      e.preventDefault();
+
+      const taskName = document.getElementById('taskName').value;
+      const taskPriority = document.getElementById('taskPriority').value;
+      const dueDate = document.getElementById('dueDate').value;
+
+      const newTask = {
+        name: taskName,
+        priority: taskPriority,
+        date: dueDate,
+      };
+
+      tasks.push(newTask);
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+
+      taskForm.reset();
+      renderTasks();
+    }
+
+    // Function to delete a task
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      renderTasks();
+    }
+
+    // Function to edit a task
+    function editTask(index) {
+      const editedTask = tasks[index];
+      const taskName = prompt('Enter new task name:', editedTask.name);
+      const taskPriority = prompt('Enter new task priority:', editedTask.priority);
+      const dueDate = prompt('Enter new due date:', editedTask.date);
+
+      editedTask.name = taskName;
+      editedTask.priority = taskPriority;
+      editedTask.date = dueDate;
+
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      renderTasks();
+    }
+
+    // Event listeners
+    taskForm.addEventListener('submit', addTask);
+
+    // Initial rendering of tasks
+    renderTasks();
+  </script>
+</body>
+</html>
